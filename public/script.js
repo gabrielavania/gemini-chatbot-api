@@ -1,4 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    addMessage(
+      "Bot",
+      "🎾 Halo! Aku CourtSide AI. Aku siap bantu kamu memahami tenis — dari aturan, istilah, hingga pemain dan strategi",
+    );
+  }, 800);
+
   const chatForm = document.getElementById("chat-form");
   const userInput = document.getElementById("user-input");
   const chatBox = document.getElementById("chat-box");
@@ -48,19 +55,42 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Error:", error);
       // 5. Handle errors
-      updateMessage(loadingId, "Bot", "Failed to get response from server.");
+      updateMessage(
+        loadingId,
+        "Bot",
+        "🎾 CourtSide AI lagi rame banget. Coba kirim ulang dalam beberapa detik ya!",
+      );
     }
   });
 
   // Helper function to format text (bolding **text**)
   function formatText(text) {
-    const escaped = text
+    let escaped = text
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
-    return escaped.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+    // Bold: **text**
+    escaped = escaped.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+    // Italic: *text* (but not **bold**)
+    escaped = escaped.replace(
+      /(^|[^*])\*(?!\*)([^*\n]+)\*(?!\*)/g,
+      "$1<em>$2</em>",
+    );
+
+    // Numbered list: 1. 2. 3. (only at line start)
+    escaped = escaped.replace(/(^|\n)(\d+)\.\s+/g, "<br><strong>$2.</strong> ");
+
+    // Bullet list: * item (only at line start)
+    escaped = escaped.replace(/(^|\n)\*\s+/g, "<br>• ");
+
+    // Remove leading <br>
+    escaped = escaped.replace(/^<br>/, "");
+
+    return escaped;
   }
 
   function addMessage(sender, text, id = null) {
@@ -74,11 +104,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (sender === "Bot" && text === "Thinking...") {
       messageDiv.innerHTML = `
-        <div class="loader-container">
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-        </div>`;
+    <div class="emoji-loader">
+      <span>🎾</span>
+      <span>🎾</span>
+      <span>🎾</span>
+    </div>
+  `;
     } else {
       // Apply formatting only for Bot messages, use textContent for User to be safe
       if (sender === "Bot") {
